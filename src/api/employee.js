@@ -8,3 +8,14 @@ export const fetchAllEmployees = async() => {
     });
     return res.data;
 }
+
+export const addEmployee = async (body) => {
+    console.log({body});
+    const url = import.meta.env.VITE_API_URL;
+    const res = await axios({
+        url: `${url}/employees`,
+        method: "post",
+        data: body
+    });
+    return res.data;
+}

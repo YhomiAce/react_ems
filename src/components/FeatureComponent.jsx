@@ -1,9 +1,11 @@
-import React from 'react'
+import React from "react";
 
 const FeatureComponent = () => {
   return (
-    <div>FeatureComponent</div>
-  )
-}
+    <div>
+      <h1>FeatureComponent</h1>
+    </div>
+  );
+};
 
-export default FeatureComponent
+export default FeatureComponent;

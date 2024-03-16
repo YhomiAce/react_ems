@@ -14,6 +14,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <HeaderComponent />
       <Routes>
+        {/* <Route path="/" /> */}
         <Route path="/" element={<EmployeeList />} />
         <Route path="/home" element={<EmployeeList />} />
         <Route path="/features" element={<FeatureComponent />} />

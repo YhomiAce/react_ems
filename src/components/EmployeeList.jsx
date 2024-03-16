@@ -3,39 +3,63 @@ import { Button, Container, Table } from "react-bootstrap";
 import useEmployee from "../hooks/useEmployee";
 import FormModal from "./FormModal";
 import AddEmployee from "./AddEmployee";
-import useEmployeeAction from "../hooks/useEmployeeAction";
+import useEmployeeAction from "../hooks/useCreateEmployee";
 import SpinnerComponent from "./Spinner";
 import { toast } from "react-toastify";
+import { FaUserEdit, FaTrash } from "react-icons/fa";
+import DeleteConfirmation from "./DeleteConfirmation";
+import useDeleteEmployee from "../hooks/useDeleteEmployee";
 
 const EmployeeList = () => {
   const { data, isFetching, isError, error } = useEmployee();
   const mutation = useEmployeeAction();
+  const deleteMutation = useDeleteEmployee()
   const [showModal, setShowModal] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [employeeId, setEmployeeId] = useState();
 
   const onClose = () => setShowModal(false);
   const openModal = () => setShowModal(true);
+  const onCloseDelete = () => setShowDelete(false);
+  const openDeleteModal = (id) => {
+    setEmployeeId(id);
+    setShowDelete(true);
+  };
 
   useEffect(() => {
-    if(mutation.isError && mutation.error){
-      console.log({error: mutation.error});
+    if (mutation.isError && mutation.error) {
+      console.log({ error: mutation.error });
       toast.error(mutation.error.response.data.message);
     }
   }, [mutation.error, mutation.isError]);
 
   useEffect(() => {
-    if(mutation.isSuccess && mutation.data){
-      console.log({data: mutation.data});
+    if (mutation.isSuccess && mutation.data) {
+      console.log({ data: mutation.data });
       setShowModal(false);
       toast.success("Employee Data saved succesfuly");
     }
   }, [mutation.data, mutation.isSuccess]);
 
-  console.log({ data, error });
+  useEffect(() => {
+    if (deleteMutation.isSuccess && deleteMutation.data) {
+      console.log({ data: deleteMutation.data });
+      setShowDelete(false);
+      toast.success(deleteMutation.data);
+    }
+  }, [deleteMutation.data, deleteMutation.isSuccess]);
+
+  console.log({isSuccess: deleteMutation.isSuccess, data: deleteMutation.data});
+
   const submit = (values) => {
-    console.log(values);
-   mutation.mutate(values);
-   
+    mutation.mutate(values);
   };
+
+  const deleteEmployee = () => {
+    console.log('delete...', employeeId);
+    deleteMutation.mutate(employeeId);
+  };
+
   if (isFetching) {
     return <SpinnerComponent />;
   }
@@ -73,8 +97,16 @@ const EmployeeList = () => {
                 <td>{employee.lastName}</td>
                 <td>{employee.email}</td>
                 <td>
-                  <button className="btn btn-primary btn-sm mx-2">Edit</button>
-                  <button className="btn btn-danger btn-sm">Delete</button>
+                  <FaUserEdit
+                    className="text-primary"
+                    role="button"
+                    onClick={openModal}
+                  />
+                  <FaTrash
+                    className="mx-3 text-danger"
+                    role="button"
+                    onClick={() =>openDeleteModal(employee.id)}
+                  />
                 </td>
               </tr>
             ))}
@@ -88,6 +120,11 @@ const EmployeeList = () => {
       >
         <AddEmployee submit={submit} isLoading={mutation.isPending} />
       </FormModal>
+      <DeleteConfirmation
+        show={showDelete}
+        handleClose={onCloseDelete}
+        handleConfirm={deleteEmployee}
+      />
     </Container>
   );
 };

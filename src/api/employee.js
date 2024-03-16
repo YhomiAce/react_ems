@@ -19,3 +19,13 @@ export const addEmployee = async (body) => {
     });
     return res.data;
 }
+
+export const deleteEmployee = async (id) => {
+    console.log({id});
+    const url = import.meta.env.VITE_API_URL;
+    const res = await axios({
+        url: `${url}/employees/${id}`,
+        method: "delete",
+    });
+    return res.data;
+}

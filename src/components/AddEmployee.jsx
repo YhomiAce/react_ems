@@ -3,13 +3,20 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import SpinnerComponent from "./Spinner";
 
-const AddEmployee = ({ submit, isLoading }) => {
+const AddEmployee = ({ submit, isLoading, employee }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
-  console.log({ errors });
+  } = useForm({
+    defaultValues: {
+      firstName: employee ? employee.firstName : "",
+      lastName: employee ? employee.lastName : "",
+      email: employee ? employee.email : "",
+    },
+  });
+
+  const text = employee ? "Update Employee" : "Add Employee";
 
   return (
     <Container>
@@ -55,7 +62,7 @@ const AddEmployee = ({ submit, isLoading }) => {
             </Form.Group>
 
             <Button variant="primary" type="submit" className="mt-3 float-end">
-              {isLoading ? <SpinnerComponent /> : "Add Employee"}
+              {isLoading ? <SpinnerComponent /> : text}
             </Button>
           </Form>
         </Col>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Modal } from "react-bootstrap";
 
-const FormModal = ({ title, children, ok, showModal, onClose }) => {
+const FormModal = ({ title, children, showModal, onClose }) => {
   return (
     <div>
       <Modal

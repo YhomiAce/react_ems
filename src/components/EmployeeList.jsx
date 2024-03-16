@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Container, Table } from "react-bootstrap";
 import useEmployee from "../hooks/useEmployee";
 import FormModal from "./FormModal";
@@ -9,55 +9,69 @@ import { toast } from "react-toastify";
 import { FaUserEdit, FaTrash } from "react-icons/fa";
 import DeleteConfirmation from "./DeleteConfirmation";
 import useDeleteEmployee from "../hooks/useDeleteEmployee";
+import { useUpdateEmployee } from "../hooks/useUpdateEmployee";
 
 const EmployeeList = () => {
   const { data, isFetching, isError, error } = useEmployee();
   const mutation = useEmployeeAction();
-  const deleteMutation = useDeleteEmployee()
+  const deleteMutation = useDeleteEmployee();
+  const updateMutation = useUpdateEmployee();
   const [showModal, setShowModal] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [employeeId, setEmployeeId] = useState();
+  const [employee, setEmployee] = useState(null);
 
-  const onClose = () => setShowModal(false);
+  const onClose = () => {
+    setEmployee(null);
+    setShowModal(false);
+  };
   const openModal = () => setShowModal(true);
+  const openModalInEditMode = (employee) => {
+    setEmployee(employee);
+    setShowModal(true);
+  };
   const onCloseDelete = () => setShowDelete(false);
   const openDeleteModal = (id) => {
     setEmployeeId(id);
     setShowDelete(true);
   };
 
-  useEffect(() => {
-    if (mutation.isError && mutation.error) {
-      console.log({ error: mutation.error });
-      toast.error(mutation.error.response.data.message);
-    }
-  }, [mutation.error, mutation.isError]);
-
-  useEffect(() => {
-    if (mutation.isSuccess && mutation.data) {
-      console.log({ data: mutation.data });
-      setShowModal(false);
-      toast.success("Employee Data saved succesfuly");
-    }
-  }, [mutation.data, mutation.isSuccess]);
-
-  useEffect(() => {
-    if (deleteMutation.isSuccess && deleteMutation.data) {
-      console.log({ data: deleteMutation.data });
-      setShowDelete(false);
-      toast.success(deleteMutation.data);
-    }
-  }, [deleteMutation.data, deleteMutation.isSuccess]);
-
-  console.log({isSuccess: deleteMutation.isSuccess, data: deleteMutation.data});
-
   const submit = (values) => {
-    mutation.mutate(values);
+    console.log({ values });
+    if (employee) {
+      updateMutation.mutate(
+        { id: employee.id, body: values },
+        {
+          onSuccess: () => {
+            setEmployee(null);
+            setShowModal(false);
+            toast.success("Employee udpated succesfuly");
+          },
+        }
+      );
+    } else {
+      mutation.mutate(values, {
+        onSuccess: () => {
+          setEmployee(null);
+          setShowModal(false);
+          toast.success("Employee created succesfuly");
+        },
+        onError: (error) => {
+          console.log({ error });
+          toast.error(error.response.data.message);
+        },
+      });
+    }
   };
 
   const deleteEmployee = () => {
-    console.log('delete...', employeeId);
-    deleteMutation.mutate(employeeId);
+    console.log("delete...", employeeId);
+    deleteMutation.mutate(employeeId, {
+      onSuccess: (response) => {
+        setShowDelete(false);
+        toast.success(response);
+      },
+    });
   };
 
   if (isFetching) {
@@ -100,12 +114,12 @@ const EmployeeList = () => {
                   <FaUserEdit
                     className="text-primary"
                     role="button"
-                    onClick={openModal}
+                    onClick={() => openModalInEditMode(employee)}
                   />
                   <FaTrash
                     className="mx-3 text-danger"
                     role="button"
-                    onClick={() =>openDeleteModal(employee.id)}
+                    onClick={() => openDeleteModal(employee.id)}
                   />
                 </td>
               </tr>
@@ -115,10 +129,13 @@ const EmployeeList = () => {
       <FormModal
         showModal={showModal}
         onClose={onClose}
-        ok={"OK"}
         title={"Create New Employee"}
       >
-        <AddEmployee submit={submit} isLoading={mutation.isPending} />
+        <AddEmployee
+          submit={submit}
+          isLoading={mutation.isPending}
+          employee={employee}
+        />
       </FormModal>
       <DeleteConfirmation
         show={showDelete}
